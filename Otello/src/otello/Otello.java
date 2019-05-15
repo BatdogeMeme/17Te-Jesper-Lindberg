@@ -14,22 +14,28 @@ import java.util.ArrayList;
 public class Otello {
 
     boolean flipped;
-
-
-    public static final int BOARD_SIZE = 8;
-    static int board[][] = new int[BOARD_SIZE][BOARD_SIZE];
-
+    boolean gg = false;
+    
+    private static final int boardSize = 8;
+    private static final int boxSize = 30;
+    static int board[][] = new int[boardSize][boardSize];
+    
+    
+    /*
+         Traks poits for player
+         w for white
+         b for black
+    */
     int wp = 0;
     int bp = 0;
-
+    
     int player = 1;
     int other = 2;
+    
+    
+    /* Constructor */
+    public Otello() {
 
-    OtelloGUI gui;
-
-    public Otello(OtelloGUI gui) {
-        this.gui = gui;
-        //addMouseListener(this);
         board[3][3] = 2;
         board[4][3] = 1;
 
@@ -37,18 +43,19 @@ public class Otello {
         board[4][4] = 2;
 
         updatePoints();
+
         legalMoveLeft();
 
     }
 
-
     /*
     *   Flips all of the rows for the tiles in the list
      */
-    private void flipRow(ArrayList<tile> tiles) throws ArrayIndexOutOfBoundsException {
+    private void flipRow(ArrayList<rowStart> tiles) throws ArrayIndexOutOfBoundsException {
         flipped = false;
 
-        tiles.forEach((tile) -> {
+        for (rowStart tile : tiles) {
+
             int x = tile.x + tile.dX;
             int y = tile.y + tile.dY;
 
@@ -57,10 +64,10 @@ public class Otello {
 
                 x += tile.dX;
                 y += tile.dY;
-
+                
                 flipped = true;
             }
-        });
+        }
 
         if (flipped) {
 
@@ -76,7 +83,7 @@ public class Otello {
     /*
     *   Returns true if the tile has an end
      */
-    private boolean hasEnd(tile tile) {
+    private boolean hasEnd(rowStart tile) {
 
         int x = tile.x + tile.dX;
         int y = tile.y + tile.dY;
@@ -100,9 +107,9 @@ public class Otello {
     *   Returns true if there is any legal move left
     *   and false if there is nun
      */
-    private boolean legalMoveLeft() throws ArrayIndexOutOfBoundsException {
+    public boolean legalMoveLeft() throws ArrayIndexOutOfBoundsException {
 
-        ArrayList<tile> list = new ArrayList<tile>();
+        ArrayList<rowStart> list = new ArrayList<rowStart>();
 
         boolean legalMoveLeft = false;
 
@@ -111,11 +118,11 @@ public class Otello {
 
                 list = surroundingTilesWithEnd(i, j);
 
-                for (tile tile : list) {
+                for (rowStart tile : list) {
 
                     if (hasEnd(tile) && emptyTile(tile.x, tile.y)) {
 
-                        board[i][j] = 3;
+                        
                         legalMoveLeft = true;
 
                     }
@@ -126,7 +133,7 @@ public class Otello {
         }
 
         if (legalMoveLeft) {
-
+            
             return true;
         }
 
@@ -134,25 +141,31 @@ public class Otello {
     }
 
     /*
-    *   Returns a list of tiles that the
-    *   player can place tiles on
+    *   Returns a list of rowStarts that the
+    *   player can place on.
+    *   Also set the coordinate to 3 set its board color to red (Red means that a player can place on it)
      */
-    private ArrayList<tile> surroundingTilesWithEnd(int xPos, int yPos) {
+    private ArrayList<rowStart> surroundingTilesWithEnd(int xPos, int yPos) {
 
-        ArrayList<tile> list = new ArrayList<tile>();
+        ArrayList<rowStart> list = new ArrayList<rowStart>();
 
         boolean hadEnd = false;
 
-        // koller på omgivnigen 
+        // Checks suroundings
         for (int x = xPos - 1; x <= xPos + 1; x++) {
             for (int y = yPos - 1; y <= yPos + 1; y++) {
                 if (!(x == xPos && y == yPos)) {
                     try {
-                        // om en ruta runt din är andra spelaren och det finns en av dina på slutet byt ut andra spelars pjäser mot dina
-                        if (board[x][y] == other && hasEnd(new tile(xPos, yPos, x - xPos, y - yPos))) {
-
-                            list.add(new tile(xPos, yPos, x - xPos, y - yPos));
-
+                        // 
+                        if (board[x][y] == other && hasEnd(new rowStart(xPos, yPos, x - xPos, y - yPos))) {
+                            
+                            list.add(new rowStart(xPos, yPos, x - xPos, y - yPos));
+                            
+                            // Makes sure that it sets a 3 on only emptytiles
+                            if(emptyTile(xPos,yPos)){
+                                board[xPos][yPos] = 3;
+                            }
+                            
                         }
                     } catch (Exception ex) {
 
@@ -165,35 +178,14 @@ public class Otello {
     }
 
     /*
-    *   Redraws the text that needs to be redrwan
-    *   Points 
-    *   Turn
+    * Update the points
      */
-    private void updateText() {
-        updatePoints();
-
-        gui.wpl.setText(String.valueOf("White points: " + wp));
-        gui.bpl.setText(String.valueOf("Black points: " + bp));
-
-        if (player == 1) {
-            gui.turn.setText("Black's turn");
-        } else {
-            gui.turn.setText("White's turn");
-        }
-
-    }
-
-    /*
-    * Looks through the board and
-    * counts the points
-    * and updates the point variables
-     */
-    public void updatePoints() {
+    private void updatePoints() {
 
         bp = wp = 0;
 
-        for (int i = 0; i < BOARD_SIZE; i++) {
-            for (int j = 0; j < BOARD_SIZE; j++) {
+        for (int i = 0; i < boardSize; i++) {
+            for (int j = 0; j < boardSize; j++) {
                 if (board[i][j] == 1) {
                     bp++;
                 }
@@ -218,7 +210,6 @@ public class Otello {
                 }
             }
         }
-
     }
 
     /*
@@ -228,24 +219,23 @@ public class Otello {
      */
     private boolean emptyTile(int x, int y) {
 
-        return board[x][y] == 0 || board[x][y] == 3;
-    }
-
-    public void printBoard() {
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                System.out.print(board[i][j]);
-            }
-            System.out.println();
-
+        if (board[x][y] == 0 || board[x][y] == 3) {
+            return true;
         }
+
+        return false;
     }
 
+    
+    /*
+    *   Gets called from OtelloGUI when mouse is clicked on
+    *   the board
+    */
     public void clicked(int x, int y) {
+
         resetLegalMoves();
 
         // om du klickar på en tomm ruta titta på omgivnigen
-        System.out.println(emptyTile(x, y));
         if (emptyTile(x, y)) {
 
             System.out.println("Clicked x : " + x + " Clicked y: " + y);
@@ -258,15 +248,15 @@ public class Otello {
         updatePoints();
         System.out.println("White Points: " + wp + " Black points: " + bp);
 
-        System.out.println(legalMoveLeft());
-
         if (!legalMoveLeft()) {
-        gui.turn.setText("gg");
-        } else {
-        updateText();
-        }
-
+            gg = true;
+            
+        } 
         System.out.println();
-    }
 
+    }
+    
+    
+    
+    
 }
