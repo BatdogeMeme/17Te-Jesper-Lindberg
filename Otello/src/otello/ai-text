@@ -1,0 +1,9 @@
+
+
+Botten simulerar vad som händer om den lägger på en ruta för alla rutor den kan lägga på.
+
+Den räknar ut påängen och lägger in pjäs där den får mäst poäng.
+
+Svårare nivåer kommer titta på hur planen kommer se ut efter andra spelaren har gjort sitt drag och hur den kan ha mäst poäng efter det.
+
+Den tänker bara poäng inte något på hur planen ser ut eller kommer se ut.
